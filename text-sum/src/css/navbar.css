@@ -1,0 +1,14 @@
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&display=swap');
+
+.navbar {
+    background-color: #f0e9e6;
+    display: flex;
+    justify-content: space-between;
+    padding: 7px 30px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+    font-size: 25px;
+    font-weight: 600;
+}

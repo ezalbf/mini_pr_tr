@@ -1,0 +1,4 @@
+# .gitignore
+venv/
+*.log
+Fastapi/__pycache__/
