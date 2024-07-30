@@ -2,4 +2,4 @@
 venv/
 *.log
 Fastapi/__pycache__/
-text-sum/node_modules
+Frontend/node_modules
