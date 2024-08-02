@@ -24,13 +24,19 @@ summarizer = get_summarizer()
 
 class SummarizeRequest(BaseModel):
     text: str
-    max_length: int = 150
-    min_length: int = 30
+    mode: str = 'Paragraph'
+    length: str = 'Concise'
 
 @app.post("/summarize")
 async def summarize(request: SummarizeRequest):
     try:
-        summary = summarize_text(summarizer, request.text, request.max_length, request.min_length)
+        # Set max_length and min_length based on length
+        if request.length == 'Concise':
+            max_length, min_length = 100, 30
+        else:  # Standard
+            max_length, min_length = 200, 50
+
+        summary = summarize_text(summarizer, request.text, max_length, min_length, request.mode)
         return {"summary": summary}
     except Exception as e:
         print(f"Error in summarization: {str(e)}")

@@ -1,21 +1,26 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-from transformers import pipeline
+from transformers import PegasusForConditionalGeneration, PegasusTokenizer
 import concurrent.futures
 
 def get_summarizer():
-    return pipeline("summarization", model="sshleifer/distilbart-cnn-12-6", framework="pt")
+    model = PegasusForConditionalGeneration.from_pretrained('google/pegasus-xsum')
+    tokenizer = PegasusTokenizer.from_pretrained('google/pegasus-xsum')
+    return (model, tokenizer)
 
 def summarize_chunk(summarizer, text, max_length=150, min_length=30):
     try:
-        summary = summarizer(text, max_length=max_length, min_length=min_length, do_sample=False)
-        return summary[0]['summary_text']
+        model, tokenizer = summarizer
+        inputs = tokenizer(text, return_tensors="pt", max_length=512, truncation=True)
+        outputs = model.generate(inputs['input_ids'], max_length=max_length, min_length=min_length, length_penalty=2.0, num_beams=4, early_stopping=True)
+        summary = tokenizer.decode(outputs[0], skip_special_tokens=True)
+        return summary
     except Exception as e:
         print(f"Error summarizing chunk: {e}")
         return ""
 
-def summarize_text(summarizer, text, max_length=150, min_length=30):
+def summarize_text(summarizer, text, max_length=150, min_length=30, mode='Paragraph'):
     # Split the text into chunks of 1000 characters
     chunks = [text[i:i+1000] for i in range(0, len(text), 1000)]
     summaries = []
@@ -30,6 +35,14 @@ def summarize_text(summarizer, text, max_length=150, min_length=30):
 
     # If the final summary is still too long, summarize it again
     if len(final_summary) > 1000:
-        final_summary = summarizer(final_summary, max_length=max_length, min_length=min_length, do_sample=False)[0]['summary_text']
+        model, tokenizer = summarizer
+        inputs = tokenizer(final_summary, return_tensors="pt", max_length=512, truncation=True)
+        outputs = model.generate(inputs['input_ids'], max_length=max_length, min_length=min_length, length_penalty=2.0, num_beams=4, early_stopping=True)
+        final_summary = tokenizer.decode(outputs[0], skip_special_tokens=True)
+        
+     # Convert to bullet points if mode is 'Bullet Points'
+    if mode == 'Bullet Points':
+        sentences = final_summary.split('. ')
+        final_summary = '\n'.join([f"• {sentence.strip()}" for sentence in sentences if sentence.strip()])
 
     return final_summary

@@ -20,9 +20,8 @@ const TxStool = () => {
     try {
       const response = await axios.post('http://localhost:8000/summarize', {
         text: text,
-        max_length: length === 'Concise' ? 100 : 200,
-        min_length: length === 'Concise' ? 30 : 50,
-        mode: mode 
+        mode: mode,
+        length: length
       });
       setSummary(response.data.summary);
     } catch (error) {
