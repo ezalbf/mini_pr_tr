@@ -22,6 +22,7 @@ const TxStool = () => {
         text: text,
         max_length: length === 'Concise' ? 100 : 200,
         min_length: length === 'Concise' ? 30 : 50,
+        mode: mode 
       });
       setSummary(response.data.summary);
     } catch (error) {
@@ -66,6 +67,14 @@ const TxStool = () => {
   const triggerFileInput = () => {
     fileInputRef.current.click();
   };
+
+  const handleModeChange = (newMode) => {
+    setMode(newMode);
+  };
+
+  const handleLengthChange = (newLength) => {
+    setLength(newLength);
+  };
   
   return (
     <>
@@ -79,13 +88,27 @@ const TxStool = () => {
         <div className="controls">
           <div className="modes">
             <p><b>Modes:</b></p>
-            <p>Paragraph</p>
-            <p>Bullet Points</p>
+            <p
+                className={mode === 'Paragraph' ? 'active' : ''}
+                onClick={() => handleModeChange('Paragraph')}
+              >Paragraph</p>
+
+             <p
+                className={mode === 'Bullet Points' ? 'active' : ''}
+                onClick={() => handleModeChange('Bullet Points')}
+              >Bullet Points</p>
           </div>
           <div className="length">
             <p><b>Lengths:</b></p>
-            <p>Concise</p>
-            <p>Standard</p>
+            <p
+                className={length === 'Concise' ? 'active' : ''}
+                onClick={() => handleLengthChange('Concise')}
+              >Concise</p>
+
+            <p
+                className={length === 'Standard' ? 'active' : ''}
+                onClick={() => handleLengthChange('Standard')}
+              >Standard</p>
           </div>
         </div>
         <div className="textareas-container">

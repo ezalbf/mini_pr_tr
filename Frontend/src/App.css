@@ -150,3 +150,25 @@ body {
     font-weight: 450;
     margin: 0;
   }
+
+  .controls {
+    display: flex;
+    justify-content: center;
+    width: 80%;
+    margin-bottom: 20px;
+  }
+  
+  .modes, .length {
+    display: flex;
+    gap: 20px;
+    margin: 0 20px;
+  }
+
+  .modes p, .length p {
+    cursor: pointer;
+    margin: 0;
+  }
+  
+  .modes p.active, .length p.active {
+    color: #a1acee;
+  }
