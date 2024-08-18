@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
@@ -65,9 +65,20 @@ async def upload_file(file: UploadFile = File(...)):
                 if hasattr(shape, 'text'):
                     text += shape.text + "\n"
     else:
-        return {"error": "Unsupported file format"}
+        raise HTTPException(status_code=500, detail="Unsupported file format")
 
-    return {"text": text}
+    text_split_line = text.split("\n")
+    word_count = 0
+    
+    for line in text_split_line:
+        word_count += len(line.strip().split(" "))
+    
+    if word_count > 2000:
+        raise HTTPException(status_code=500, detail="Word limit exceeded")
+
+    return {"text": text, 
+            "count": word_count
+        }
 
 if __name__ == "__main__":
     import uvicorn

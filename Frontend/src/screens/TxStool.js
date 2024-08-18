@@ -55,7 +55,10 @@ const TxStool = () => {
           setText(response.data.text);
         } catch (error) {
           console.error('Error uploading file:', error);
-          alert('Error uploading file. Please try again.');
+
+          const errorMessage = error.response.data.detail
+
+          alert(`Error uploading file. ${errorMessage}. Please try again.`);
         }
       } else {
         alert('Please upload a TXT, PDF, DOCX, or PPTX file.');
