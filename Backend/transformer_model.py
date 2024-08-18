@@ -39,7 +39,10 @@ def summarize_text(summarizer, text, max_length=150, min_length=30, mode='Paragr
         inputs = tokenizer(final_summary, return_tensors="pt", max_length=512, truncation=True)
         outputs = model.generate(inputs['input_ids'], max_length=max_length, min_length=min_length, length_penalty=2.0, num_beams=4, early_stopping=True)
         final_summary = tokenizer.decode(outputs[0], skip_special_tokens=True)
-        
+    
+    split_final_text = final_summary.split('..')
+    final_summary = ' '.join(split_final_text)
+    
      # Convert to bullet points if mode is 'Bullet Points'
     if mode == 'Bullet Points':
         sentences = final_summary.split('. ')
