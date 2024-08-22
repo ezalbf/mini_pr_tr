@@ -3,10 +3,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from transformer_model import get_summarizer, summarize_text
+from gpt_image_reader import image_extractor
+from PIL import Image
+import pytesseract
 import io
 import PyPDF2
 import docx
 import pptx
+
+#pytesseract.pytesseract.tesseract_cmd = r'C:\Users\Eunice\AppData\Local\Programs\Tesseract-OCR'
 
 app = FastAPI()
 
@@ -42,7 +47,7 @@ async def summarize(request: SummarizeRequest):
         print(f"Error in summarization: {str(e)}")
         return JSONResponse(status_code=500, content={"detail": f"Error in summarization: {str(e)}"})
 
-@app.post("/upload")
+@app.post("/upload_file")
 async def upload_file(file: UploadFile = File(...)):
     content = await file.read()
     file_extension = file.filename.split('.')[-1].lower()
@@ -79,6 +84,23 @@ async def upload_file(file: UploadFile = File(...)):
     return {"text": text, 
             "count": word_count
         }
+
+@app.post("/upload_image")
+async def upload_image(file: UploadFile = File(...)):
+    content = await file.read()
+    #image = Image.open(io.BytesIO(content))
+    
+    try:
+        text = image_extractor(content)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error in OCR processing: {str(e)}")
+    
+    word_count = len(text.split())
+    
+    if word_count > 2000:
+        raise HTTPException(status_code=500, detail="Word limit exceeded")
+
+    return {"text": text, "count": word_count}
 
 if __name__ == "__main__":
     import uvicorn

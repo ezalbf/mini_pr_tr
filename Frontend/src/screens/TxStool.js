@@ -2,14 +2,17 @@ import React, { useState,useRef } from 'react';
 import '../App.css';
 import NavBar from '../components/navbar'
 import axios from 'axios';
+import copyicon from '../assets/icons/icons8-copy.gif'
 
 const TxStool = () => {
   const [text, setText] = useState('');
   const [summary, setSummary] = useState('');
   const [mode, setMode] = useState('Paragraph');
-  const [length, setLength] = useState('Concise');
+  const [length, setLength] = useState('Standard');
   const [isLoading, setIsLoading] = useState(false);
+  const [isImageUploading, setIsImageUploading] = useState(false);
   const fileInputRef = useRef(null);
+  const imageInputRef = useRef(null);
 
   const handleTextChange = (e) => {
     setText(e.target.value);
@@ -47,7 +50,7 @@ const TxStool = () => {
         try {
           const formData = new FormData();
           formData.append('file', file);
-          const response = await axios.post('http://localhost:8000/upload', formData, {
+          const response = await axios.post('http://localhost:8000/upload_file', formData, {
             headers: {
               'Content-Type': 'multipart/form-data'
             }
@@ -62,6 +65,33 @@ const TxStool = () => {
         }
       } else {
         alert('Please upload a TXT, PDF, DOCX, or PPTX file.');
+      }
+    }
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const fileExtension = file.name.split('.').pop().toLowerCase();
+      if (['jpg', 'jpeg', 'png'].includes(fileExtension)) {
+        setIsImageUploading(true);
+        try {
+          const formData = new FormData();
+          formData.append('file', file);
+          const response = await axios.post('http://localhost:8000/upload_image', formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            }
+          });
+          setText(response.data.text);
+        } catch (error) {
+          console.error('Error uploading image:', error);
+          const errorMessage = error.response?.data?.detail || 'An error occurred';
+          alert(`Error uploading image. ${errorMessage}. Please try again.`);
+        }
+        setIsImageUploading(false);
+      } else {
+        alert('Please upload a JPG, JPEG, or PNG file.');
       }
     }
   };
@@ -103,14 +133,14 @@ const TxStool = () => {
           <div className="length">
             <p><b>Lengths:</b></p>
             <p
-                className={length === 'Concise' ? 'active' : ''}
-                onClick={() => handleLengthChange('Concise')}
-              >Concise</p>
-
-            <p
                 className={length === 'Standard' ? 'active' : ''}
                 onClick={() => handleLengthChange('Standard')}
               >Standard</p>
+
+            <p
+                className={length === 'Concise' ? 'active' : ''}
+                onClick={() => handleLengthChange('Concise')}
+              >Concise</p>
           </div>
         </div>
         <div className="textareas-container">
@@ -130,7 +160,8 @@ const TxStool = () => {
 
                 <lord-icon className='upload image'
                     src="https://cdn.lordicon.com/baxknfaw.json"
-                    trigger="hover">
+                    trigger="hover"
+                    onClick={() => imageInputRef.current.click()}>
                 </lord-icon> {/* Upload Image Icon */}
 
                 <lord-icon className='delete'
@@ -153,12 +184,23 @@ const TxStool = () => {
               accept=".txt,.pdf,.docx,.pptx"
             />
 
+            <input
+              type="file"
+              ref={imageInputRef}
+              style={{ display: 'none' }}
+              onChange={handleImageUpload}
+              accept=".jpg,.jpeg,.png"
+            />
+
           </div>
 
           <div className="textarea-wrapper">
             <textarea readOnly value={summary} className="summary-output" />
 
             <div className="sum-icons">
+
+            <img src={copyicon} alt='' style={{"width":"30px","height":"30px"}}/> {/*Copy Icon */}
+
             <lord-icon className='delete'
                   src="https://cdn.lordicon.com/wpyrrmcq.json"
                   trigger="morph"
@@ -167,7 +209,7 @@ const TxStool = () => {
               </lord-icon> {/* Delete Icon */}
 
               
-              {/*<button>&#128194;</button> {/* Copy Icon */}
+              
             </div>
           </div>
         </div>
